@@ -27,10 +27,6 @@ class PriorityQueue:
         else:
             queue.append(elem)
 
-        # queue = self.queue.get(priority, [])
-        #
-        # queue.append(elem)
-
     def dequeue(self) -> Any:
         """
         Return element from the beginning of the queue. Should return None if not elements.
@@ -43,7 +39,7 @@ class PriorityQueue:
         queue = self.queue[key]
         if queue:
             val = queue.pop(0)
-            if not len(queue):
+            if not queue:
                 del self.queue[key]
             return val
 
