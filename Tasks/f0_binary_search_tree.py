@@ -7,23 +7,35 @@ from typing import Any, Optional, Tuple
 # import networkx as nx
 
 
-root = {
-    "key": 8,
-    "value": 8,
-    "left": {
-        "key": 8,
-        "value": 8,
-        "left": None,
-        "right": None
-    },
-    "right": {
-        "key": 8,
-        "value": 8,
-        "left": None,
-        "right": None
-    }
-}
+class Elem:
+    def __init__(self, key, value, left=None, right=None):
+        self.key = key
+        self.value = value
+        self.__left = left
+        self.__right = right
 
+    @property
+    def right(self):
+        return self.__right
+
+    @right.setter
+    def right(self, value: Optional["Elem"]):
+        self.__right = value
+        
+    @property
+    def left(self):
+        return self.__left
+    
+    @left.setter
+    def left(self, value):
+        self.__left = value
+
+    def __repr__(self):
+        return f"{type(self)}({self.key, self.value})"
+
+    def __str__(self):
+        return str(self.value)
+        
 
 class BinarySearchTree:
     def __init__(self):
@@ -31,12 +43,7 @@ class BinarySearchTree:
 
     @staticmethod
     def create_node(key, value, left: Optional[dict] = None, right: Optional[dict] = None):
-        return {
-            "key": key,
-            "value": value,
-            "left": left,
-            "right": right
-        }
+        return Elem(key, value, left, right)
 
     def insert(self, key: int, value: Any) -> None:
         """
@@ -50,27 +57,24 @@ class BinarySearchTree:
             self.root = self.create_node(key, value)
         else:
             current = self.root
-            while True:
-                current_key = current["key"]
-                if current_key > key:
-                    right_node = current["right"]
-                    if right_node is None:
-                        current["right"] = self.create_node(key, value)
-                        break
-                    else:
-                        current = current["right"]
-                        current["right"] = self.create_node(key, value)
-                        break
+            current_key = current.key
+            if current_key > key:
+                right_node = current.right
+                if right_node is None:
+                    current.right = self.create_node(key, value)
+                    return
                 else:
-                    left_node = current["left"]
-                    if left_node is None:
-                        current["left"] = self.create_node(key, value)
-                        break
-                    else:
-                        current = current["left"]
-                        current["left"] = self.create_node(key, value)
-
-        return None
+                    current = current.right
+                    current.right = self.create_node(key, value)
+                    return
+            else:
+                left_node = current.left
+                if left_node is None:
+                    current.left = self.create_node(key, value)
+                    return
+                else:
+                    current = current.left
+                    current.left = self.create_node(key, value)
 
     def remove(self, key: int) -> Optional[Tuple[int, Any]]:
         """
@@ -79,8 +83,12 @@ class BinarySearchTree:
         :param key: key to be removed
         :return: deleted (key, value) pair or None
         """
-        print(key)
-        return None
+        try:
+            node = self.find(key)
+        except KeyError:
+            node = None
+        if node is not None:
+            pass
 
     def find(self, key: int) -> Optional[Any]:
         """
@@ -90,28 +98,17 @@ class BinarySearchTree:
         :return: value associated with the corresponding key
         """
         def find_key(current_node):
+            if type(current_node) is int:
+                current_node = self.root
             if current_node is None:
                 raise KeyError
-            current_key = current_node["key"]
+            current_key = current_node.key
+            print(current_key, key)
             if current_key == key:
-                return current_node["value"]
-            next_node = current_node["left"] if key < current_key else current_node["right"]
-            find_key(next_node)
+                return current_node.value
+            next_node = current_node.left if key < current_key else current_node.right
+            return find_key(next_node)
         return find_key(key)
-
-    def generator(self):
-        current = self.root
-        if current is None:
-            return
-        left = current.left
-        right = current.right
-        while left or right:
-            left = current.left
-            right = current.right
-            yield (left, right,)
-
-    def __iter__(self):
-        return self.generator()
 
     def clear(self) -> None:
         """
